@@ -78,7 +78,18 @@ function clone(dest, config, ref, context, done) {
       // this /only/ gets the one branch; so only use if we won't be caching
       if (!config.cache && git_version >= 1.8) cmd += ' --single-branch';
     }
-    return utils.gitaneCmd(cmd, dest, config.auth.privkey, context, done);
+    if (ref.changeNum && ref.patchset ) {
+      var extraCmd1 = 'git fetch ' + utils.sshUrl(config)[0]
+        + ' refs/changes/'+ref.changeNum+'/'+ref.changeNum+'/'+ref.patchset;
+      var extraCmd2 = 'git cherry-pick FETCH_HEAD';
+      return utils.gitaneCmd(cmd, dest, config.auth.privkey, context, function() {
+        utils.gitaneCmd(extraCmd1, dest, config.auth.privkey, context, function() {
+          utils.gitCmd(extraCmd2, dest, '', context, done);    
+        });
+      });
+    } else {
+      return utils.gitaneCmd(cmd, dest, config.auth.privkey, context, done);
+    }
   }
   context.cmd({
     cmd: httpCloneCmd(config, ref.branch),
