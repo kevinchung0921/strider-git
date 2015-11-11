@@ -59,7 +59,7 @@ function gitVersion(next) {
   });
   child.on('error', function () {});
 }
- 
+
 
 function clone(dest, config, ref, context, done) {
   var git_version = parseFloat('1.0');
@@ -80,11 +80,12 @@ function clone(dest, config, ref, context, done) {
     }
     if (ref.changeNum && ref.patchset ) {
       var extraCmd1 = 'git fetch ' + utils.sshUrl(config)[0]
-        + ' refs/changes/'+ref.changeNum+'/'+ref.changeNum+'/'+ref.patchset;
+        + ' refs/changes/'+(ref.changeNum<10?'0'+ref.changeNum.toString():ref.changeNum)
+        +'/'+ref.changeNum+'/'+ref.patchset;
       var extraCmd2 = 'git cherry-pick FETCH_HEAD';
       return utils.gitaneCmd(cmd, dest, config.auth.privkey, context, function() {
         utils.gitaneCmd(extraCmd1, dest, config.auth.privkey, context, function() {
-          utils.gitCmd(extraCmd2, dest, '', context, done);    
+          utils.gitCmd(extraCmd2, dest, '', context, done);
         });
       });
     } else {
